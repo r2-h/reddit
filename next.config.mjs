@@ -1,4 +1,8 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    domains: ["encrypted-tbn0.gstatic.com", "lh3.googleusercontent.com"],
+  },
+}
 
-export default nextConfig;
+export default nextConfig
