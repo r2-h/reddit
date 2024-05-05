@@ -9,9 +9,9 @@ import { ModeToggle } from "./ModeToggle"
 import { UserDropdown } from "./UserDropdown"
 
 export const Navbar = async () => {
-  const { getUser } = getKindeServerSession()
+  const { getUser } = getKindeServerSession() 
   const user = await getUser()
-  console.log(user)
+
   return (
     <nav className="h-[10vh] w-full flex items-center border-b px-5 lg:px-14 justify-between">
       <Link href="/" className="flex gap-x-3 items-center">
