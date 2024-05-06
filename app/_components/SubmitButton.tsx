@@ -20,3 +20,22 @@ export const SubmitButton = ({ title }: { title: string }) => {
     </>
   )
 }
+
+export const SaveButton = () => {
+  const { pending } = useFormStatus()
+
+  return (
+    <>
+      {pending ? (
+        <Button className="mt-2 w-full" disabled size="sm">
+          <Loader2 className="mr-2 w-3 h-3 animate-spin" />
+          Please wait
+        </Button>
+      ) : (
+        <Button type="submit" size="sm" className="mt-2 w-full">
+          Save
+        </Button>
+      )}
+    </>
+  )
+}
