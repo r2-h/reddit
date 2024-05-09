@@ -4,6 +4,8 @@ import prisma from "../lib/db"
 import { redirect } from "next/navigation"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 import { JSONContent } from "@tiptap/react"
+import { TypeOfVote } from "@prisma/client"
+import { revalidatePath } from "next/cache"
 
 export async function updateUsername(prevData: any, formData: FormData) {
   const { getUser } = getKindeServerSession()
@@ -98,30 +100,59 @@ export async function createPost(json: { json: JSONContent | null }, formData: F
   const user = await getUser()
   if (!user) return redirect("/api/auth/login")
 
-  try {
-    const title = formData.get("title") as string
-    const imageUrl = formData.get("imageUrl") as string | null
-    const subName = formData.get("subName") as string
+  const title = formData.get("title") as string
+  const imageUrl = formData.get("imageUrl") as string | null
+  const subName = formData.get("subName") as string
 
-    await prisma.post.create({
-      data: {
-        title,
-        imageString: imageUrl ?? undefined,
-        subName,
-        userId: user.id,
-        textContent: json ?? undefined,
-      },
-    })
+  await prisma.post.create({
+    data: {
+      title,
+      imageString: imageUrl ?? undefined,
+      subName,
+      userId: user.id,
+      textContent: json ?? undefined,
+    },
+  })
+  return redirect("/")
+}
 
-    return {
-      message: "Successfully created",
-      status: "green",
+export async function handleVote(formData: FormData) {
+  const { getUser } = getKindeServerSession()
+  const user = await getUser()
+  if (!user) return redirect("/api/auth/login")
+
+  const postId = formData.get("postId") as string
+  const voteDirection = formData.get("voteDirection") as TypeOfVote
+  const vote = await prisma.vote.findFirst({
+    where: {
+      postId: postId,
+      userId: user.id,
+    },
+  })
+
+  if (vote) {
+    if (vote.voteType === voteDirection) {
+      await prisma.vote.delete({
+        where: {
+          id: vote.id,
+        },
+      })
+      return revalidatePath("/")
+    } else {
+      await prisma.vote.update({
+        where: {
+          id: vote.id,
+        },
+        data: {
+          voteType: voteDirection,
+        },
+      })
+      return revalidatePath("/")
     }
-  } catch (error) {
-    return {
-      message: "Some error ocurred",
-      status: "error",
-    }
- 
   }
+
+  await prisma.vote.create({
+    data: { voteType: voteDirection, postId, userId: user.id },
+  })
+  return revalidatePath("/")
 }
