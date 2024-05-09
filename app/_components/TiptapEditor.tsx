@@ -1,7 +1,5 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
-import { type Editor, useEditor, EditorContent } from "@tiptap/react"
+import { type Editor, useEditor, EditorContent, JSONContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 
 export const MenuBar = ({ editor }: { editor: Editor | null }) => {
@@ -57,11 +55,19 @@ export const MenuBar = ({ editor }: { editor: Editor | null }) => {
   )
 }
 
-export const TiptapEditor = () => {
+type iTiptapEditor = {
+  json: JSONContent | null
+  setJson: (json: JSONContent | null) => void
+}
+export const TiptapEditor = ({ json, setJson }: iTiptapEditor) => {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: "<p>Hello world</p>",
+    content: json ?? "<p>Hello world</p>",
     editorProps: { attributes: { class: "prose" } },
+    onUpdate: ({ editor }) => {
+      const json = editor.getJSON()
+      setJson(json)
+    },
   })
 
   return (

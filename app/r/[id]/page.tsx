@@ -1,16 +1,12 @@
-import { updateSubDescription } from "@/app/_actions/actions"
-import { SaveButton } from "@/app/_components/SubmitButton"
 import prisma from "@/app/lib/db"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
+import { Cake } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useFormState } from "react-dom"
-import { SubDescriptionForm } from "./_components/page"
-import { Cake } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
+import { SubDescriptionForm } from "./_components/SubDescriptionForm"
 
 async function getData(name: string) {
   const data = await prisma.subreddit.findUnique({

@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import Image from "next/image"
 import pfp from "../../../../public/pfp.png"
@@ -9,6 +11,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TiptapEditor } from "@/app/_components/TiptapEditor"
 import { SubmitButton } from "@/app/_components/SubmitButton"
+import { Upload } from "../_components/Upload"
+import { createPost } from "@/app/_actions/actions"
+import { useState } from "react"
+import { JSONContent } from "@tiptap/react"
 
 const rules = [
   {
@@ -33,7 +39,13 @@ const rules = [
   },
 ]
 
-export default async function Create({ params }: { params: { id: string } }) {
+export default function Create({ params }: { params: { id: string } }) {
+  const [imageUrl, setImageUrl] = useState<null | string>(null)
+  const [json, setJson] = useState<JSONContent | null>(null)
+  const [title, setTitle] = useState("")
+
+  const createPostBinded = createPost.bind(null, { json })
+
   return (
     <div className="max-w-[1000px] mx-auto flex gap-x-10 mt-4">
       <div className="w-[65%] flex flex-col gap-y-5">
@@ -51,11 +63,19 @@ export default async function Create({ params }: { params: { id: string } }) {
           </TabsList>
           <TabsContent value="post">
             <Card>
-              <form>
+              <form action={createPostBinded}>
+                <input type="hidden" name="imageUrl" value={imageUrl ?? undefined} />
+                <input type="hidden" name="subName" value={params.id} />
                 <CardHeader>
                   <Label htmlFor="title">Title</Label>
-                  <Input required name="title" placeholder="Title" />
-                  <TiptapEditor />
+                  <Input
+                    required
+                    name="title"
+                    placeholder="Title"
+                    value={title}
+                    onChange={(e) => setTitle(e.currentTarget.value)}
+                  />
+                  <TiptapEditor json={json} setJson={setJson} />
                 </CardHeader>
                 <CardFooter>
                   <SubmitButton title="Create post" />
@@ -64,7 +84,20 @@ export default async function Create({ params }: { params: { id: string } }) {
             </Card>
           </TabsContent>
           <TabsContent value="image">
-            <h1>sfsdf</h1>
+            <Card>
+              <CardHeader>
+                {imageUrl && (
+                  <Image
+                    className="h-80 rounded-lg w-full object-contain"
+                    src={imageUrl}
+                    alt="uploaded image"
+                    width={500}
+                    height={400}
+                  />
+                )}
+                {!imageUrl && <Upload setImageUrl={setImageUrl} />}
+              </CardHeader>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

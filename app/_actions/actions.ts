@@ -1,9 +1,9 @@
 "use server"
-
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
-import db from "../lib/db"
+import prisma from "../lib/db"
 import { redirect } from "next/navigation"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
+import { JSONContent } from "@tiptap/react"
 
 export async function updateUsername(prevData: any, formData: FormData) {
   const { getUser } = getKindeServerSession()
@@ -13,7 +13,7 @@ export async function updateUsername(prevData: any, formData: FormData) {
   const username = formData.get("username") as string
 
   try {
-    await db.user.update({
+    await prisma.user.update({
       where: {
         id: user.id,
       },
@@ -47,7 +47,7 @@ export async function createCommunity(prevData: any, formData: FormData) {
   const name = formData.get("name") as string
 
   try {
-    await db.subreddit.create({ data: { userId: user.id, name } })
+    await prisma.subreddit.create({ data: { userId: user.id, name } })
 
     return redirect("/")
   } catch (error) {
@@ -72,7 +72,7 @@ export async function updateSubDescription(prevData: any, formData: FormData) {
     const description = formData.get("description") as string
     const subName = formData.get("subName") as string
 
-    await db.subreddit.update({
+    await prisma.subreddit.update({
       where: {
         name: subName,
       },
@@ -90,5 +90,38 @@ export async function updateSubDescription(prevData: any, formData: FormData) {
       message: "Some error ocurred",
       status: "error",
     }
+  }
+}
+
+export async function createPost(json: { json: JSONContent | null }, formData: FormData) {
+  const { getUser } = getKindeServerSession()
+  const user = await getUser()
+  if (!user) return redirect("/api/auth/login")
+
+  try {
+    const title = formData.get("title") as string
+    const imageUrl = formData.get("imageUrl") as string | null
+    const subName = formData.get("subName") as string
+
+    await prisma.post.create({
+      data: {
+        title,
+        imageString: imageUrl ?? undefined,
+        subName,
+        userId: user.id,
+        textContent: json ?? undefined,
+      },
+    })
+
+    return {
+      message: "Successfully created",
+      status: "green",
+    }
+  } catch (error) {
+    return {
+      message: "Some error ocurred",
+      status: "error",
+    }
+ 
   }
 }
